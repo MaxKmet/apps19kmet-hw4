@@ -2,127 +2,171 @@ package ua.edu.ucu.utils;
 
 import java.util.Arrays;
 
-public final class ImmutableArrayList implements ImmutableList{
-    private static final int INITIAL_SIZE = 1;
-    private Object[] array;
+public class ImmutableArrayList implements ImmutableList {
+
     private int size;
-    private int elements_count;
+    private int capacity;
+    private Object[] array;
+
+    public ImmutableArrayList(int cap) {
+        size = 0;
+        capacity = cap;
+        array = new Object[cap];
+    }
 
     public ImmutableArrayList() {
-        array = new Object[INITIAL_SIZE];
-        size = INITIAL_SIZE;
-        elements_count = 0;
+        size = 0;
+        capacity = 1;
+        array = new Object[1];
     }
 
-    ImmutableArrayList(Object[] elements) {
-        array = new Object[elements.length];
-        int count = 0;
-        for (int i = 0; i < elements.length; i++) {
-            if (elements[i] == null) {
-                break;
-            }
-            array[i] = elements[i];
-            count++;
-        }
-        size = elements.length;
-        elements_count = count;
+    public ImmutableArrayList(Object[] arr, int extracap) {
+        size = arr.length;
+        capacity = arr.length + extracap;
+        array = new Object[capacity];
+        System.arraycopy(arr, 0, array, 0, size);
     }
 
-    private Object[] newSize() {
-        Object[] temp;
-        if (elements_count < size) {
-            temp = new Object[size];
-        }
-        else {
-            temp = new Object[size * 2];
-        }
-        return temp;
+    public ImmutableArrayList(Object[] arr) {
+        size = arr.length;
+        capacity = arr.length + 1;
+        array = new Object[capacity];
+        System.arraycopy(arr, 0, array, 0, size);
     }
 
-    private void checkIndex(int index) {
-        if (index < 0 || index > elements_count) {
+
+
+    private ImmutableArrayList getCopy() {
+        return new ImmutableArrayList(this.array);
+    }
+
+    private ImmutableArrayList getExtendedCopy() {
+        return new ImmutableArrayList(this.array, capacity * 2 + 1);
+    }
+
+    private boolean enoughSpaceFor(int numExtra) {
+        return this.size + numExtra <= this.capacity;
+    }
+
+    @Override
+    public ImmutableArrayList add(Object e) {
+        return add(this.size, e);
+    }
+
+    @Override
+    public ImmutableArrayList add(int index, Object e) {
+        ImmutableArrayList newArrayList;
+        if (index > size || index < 0) {
             throw new IndexOutOfBoundsException();
         }
+
+        Object[] extra = new Object[]{e};
+        return addAll(index, extra);
     }
 
-    public ImmutableArrayList add(Object e) {
-        return add(elements_count, e);
-    }
-
-    public ImmutableArrayList add(int index, Object e) {
-        checkIndex(index);
-        Object[] temp = newSize();
-        System.arraycopy(array, 0, temp, 0, index);
-        temp[index] = e;
-        System.arraycopy(array, index, temp, index + 1 , elements_count - index);
-        return new ImmutableArrayList(temp);
-    }
-
-    private ImmutableArrayList addAll(Object[] c, boolean index_val, int index) {
-        ImmutableArrayList list2 = new ImmutableArrayList(array);
-        for (Object o : c) {
-            if (index_val) {
-                list2 = list2.add(index, o);
-                index++;
-            }
-            else {
-                list2 = list2.add(o);
-            }
-        }
-        return list2;
-    }
-
+    @Override
     public ImmutableArrayList addAll(Object[] c) {
-        return this.addAll(c, false, 0);
+        return addAll(size, c);
     }
 
+    @Override
     public ImmutableArrayList addAll(int index, Object[] c) {
-        return this.addAll(c, true, index);
+        if (index > size || index < 0) {
+            throw new IndexOutOfBoundsException();
+        }
+        ImmutableArrayList newArrayList;
+        if (!enoughSpaceFor(c.length)) {
+            newArrayList = getExtendedCopy();
+        } else {
+            newArrayList = getCopy();
+        }
+        while (!newArrayList.enoughSpaceFor(c.length)) {
+            newArrayList = newArrayList.getExtendedCopy();
+        }
+
+        int i = 0;
+        while (i < c.length + size) {
+            if (i < index) {
+                newArrayList.array[i] = array[i];
+            } else if (i < index + c.length) {// +1
+                newArrayList.array[i] = c[i - index];
+            } else {
+                newArrayList.array[i] = array[i - c.length];
+            }
+            i++;
+        }
+        newArrayList.size = size + c.length;
+        return newArrayList;
+
     }
 
+    @Override
     public Object get(int index) {
-        checkIndex(index);
+        if (index > size - 1 || index < 0) {
+            throw new IndexOutOfBoundsException();
+        }
         return array[index];
     }
 
+    @Override
     public ImmutableArrayList remove(int index) {
-        checkIndex(index);
-        Object[] temp = new Object[size];
-        System.arraycopy(array, 0, temp, 0, index);
-        System.arraycopy(array, index + 1, temp, index , elements_count - index - 1);
-        return new ImmutableArrayList(temp);
-
+        if (index > size - 1 || index < 0) {
+            throw new IndexOutOfBoundsException();
+        }
+        ImmutableArrayList newArrayList = new ImmutableArrayList(this.capacity);
+        for (int i = 0; i < size - 1; i++) {
+            if (i < index) {
+                newArrayList.array[i] = array[i];
+            } else {
+                newArrayList.array[i] = array[i + 1];
+            }
+        }
+        newArrayList.size = size - 1;
+        return newArrayList;
     }
 
+    @Override
     public ImmutableArrayList set(int index, Object e) {
-        checkIndex(index);
-        Object[] temp = new Object[size];
-        System.arraycopy(array, 0, temp, 0, elements_count);
-        temp[index] = e;
-        return new ImmutableArrayList(temp);
+        if (index > size - 1 || index < 0) {
+            throw new IndexOutOfBoundsException();
+        }
+        ImmutableArrayList newArrayList = getCopy();
+        newArrayList.array[index] = e;
+
+
+        return newArrayList;
     }
 
+    @Override
     public int indexOf(Object e) {
-        for (int i = 0; i < array.length; i++) {
-            if (array[i].equals(e)) {
+        for (int i = 0; i < size; i++) {
+            if (array[i] == e) {
                 return i;
             }
         }
         return -1;
     }
 
+    @Override
     public int size() {
-        return elements_count;
+        return size;
     }
 
+    public int getSize() {
+        return size;
+    }
+
+    @Override
     public ImmutableArrayList clear() {
-        return new ImmutableArrayList();
+        return new ImmutableArrayList(1);
     }
 
+    @Override
     public boolean isEmpty() {
         return size == 0;
     }
 
+    @Override
     public Object[] toArray() {
         return array;
     }

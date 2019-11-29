@@ -1,4 +1,7 @@
 package ua.edu.ucu.utils;
 
-public class IterableCollection {
+import ua.edu.ucu.iterator.Iterator;
+
+public interface IterableCollection {
+    Iterator createIterator();
 }

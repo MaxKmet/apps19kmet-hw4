@@ -1,30 +1,14 @@
 package ua.edu.ucu.tries;
+import java.util.HashMap;
 
+public class Node  {
 
-public class Node {
-    private char c;
-    public Node prev;
-    public Node[] links;
+    public Object val;
+    public HashMap<Character, Node> next;
 
-    public Node(char c, Node prev){
-        this.c = c;
-        this.prev = prev;
-        links = new Node[26];
+    public Node(){
+
+        next = new HashMap<>();
     }
-
-    public char getC(){
-        return c;
-    }
-
-    public void addChild(Node child){
-        int asci = (int) Character.toLowerCase(child.c);
-        int asci_a = 97; //for lower case
-        if(asci<=122 & asci>=97)
-            links[asci-asci_a] = child;
-        else
-            System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaa");
-    }
-
-
 
 }

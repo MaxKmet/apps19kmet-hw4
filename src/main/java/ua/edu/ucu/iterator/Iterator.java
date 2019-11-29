@@ -1,4 +1,9 @@
 package ua.edu.ucu.iterator;
 
-public class Iterator {
+public interface Iterator {
+
+    Object getNext();
+
+    boolean hasMore();
+
 }

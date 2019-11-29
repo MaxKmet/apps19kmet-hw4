@@ -37,7 +37,6 @@ public class PrefixMatches {
     }
 
     public boolean delete(String word) {
-
         return trie.delete(word);
     }
 
@@ -75,7 +74,4 @@ public class PrefixMatches {
         return filtered_list;
     }
 
-    public int size() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
 }
